@@ -13,6 +13,7 @@ from django.contrib.sites.models import Site
 from django.utils.encoding import force_unicode
 from django import forms
 from django.core.cache import cache
+from django.conf import settings as django_settings
 
 
 from appsettings import user
@@ -92,6 +93,7 @@ class App(object):
     def __setattr__(self, name, val):
         if name not in ('_vals', '_name', '_add', '_main') and self._main:
             if name in self._vals[self._name]._vals:
+                setattr(django_settings, name, val)
                 return setattr(self._vals[self._name], name, val)
             raise SettingsException, 'groups are immutable'
         super(App, self).__setattr__(name, val)
@@ -104,6 +106,7 @@ class Group(object):
         self._vals = {}
         self._readonly = False
         self._cache_prefix = 'appsetting-%s-%s-%s-' % (Site.objects.get_current().pk, self._appname, self._name)
+        self._main = main
 
         for attr in inspect.classify_class_attrs(classobj):
             # for Python 2.5 compatiblity, we use tuple indexes
@@ -143,20 +146,25 @@ class Group(object):
                 raise SettingsException, 'setting %s.%s.%s not set. Please set it in your settings.py' % (appname, name, key)
             val._parent = self
             self._vals[key] = val
+            setattr(django_settings, name, val)
 
         if has_db:
             settings = Setting.objects.all().filter(app=self._appname,
                     class_name=self._name)
             for setting in settings:
                 if self._vals.has_key(setting.key):
-                    self._vals[setting.key].initial = self._vals[setting.key].clean(setting.value)
+                    val = self._vals[setting.key].clean(setting.value)
+                    self._vals[setting.key].initial = val
+                    if self._main:
+                        setattr(django_settings, setting.key, val)
                 else:
                     ## the app removed the setting... shouldn't happen
                     ## in production. maybe error? or del it?
                     pass
 
+
     def __getattr__(self, name):
-        if name not in ('_vals', '_name', '_appname', '_verbose_name', '_readonly', '_cache_prefix'):
+        if name not in ('_vals', '_name', '_appname', '_verbose_name', '_readonly', '_cache_prefix', '_main'):
             if name not in self._vals:
                 raise AttributeError, 'setting "%s" not found'%name
             if has_db:
@@ -173,7 +181,7 @@ class Group(object):
         return super(Group, self).__getattribute__(name)
 
     def __setattr__(self, name, value):
-        if name in ('_vals', '_name', '_appname', '_verbose_name', '_readonly', '_cache_prefix'):
+        if name in ('_vals', '_name', '_appname', '_verbose_name', '_readonly', '_cache_prefix', '_main'):
             return object.__setattr__(self, name, value)
         if self._readonly:
             raise AttributeError, 'settings group %s is read-only' % self._name
@@ -200,5 +208,7 @@ class Group(object):
         setting.save()
         if appsettings.USE_CACHE:
             cache.set(self._cache_prefix+name, value)
+        if self._main:
+            setattr(django_settings, name, value)
 
 # vim: et sw=4 sts=4
