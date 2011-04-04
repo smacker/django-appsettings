@@ -66,7 +66,7 @@ class App(object):
 
     def _add(self, classobj, readonly, main, preset):
         name = classobj.__name__.lower()
-        if name in self._vals or (self._main is not None and name in self._vals[self._main]):
+        if name in self._vals or (self._main is not None and name in self._vals[self._main]._vals):
             raise SettingsException, 'duplicate declaration of settings group %s.%s' % (self._name, name)
         if name in ('_vals','_add','_name'):
             raise SettingsException, 'invalid group name: %s' % name
