@@ -83,16 +83,16 @@ class App(object):
 
     def __getattr__(self, name):
         if name not in ('_vals', '_name', '_add', '_main'):
-            if name not in self._vals and self._main:
-                if name in self._vals[self._main]._vals:
+            if name not in self._vals:
+                if self._main and name in self._vals[self._main]._vals:
                     return getattr(self._vals[self._main], name)
                 raise SettingsException, 'group not found: %s' % name
             return self._vals[name]
         return super(App, self).__getattribute__(name)
 
     def __setattr__(self, name, val):
-        if name not in ('_vals', '_name', '_add', '_main') and self._main:
-            if name in self._vals[self._name]._vals:
+        if name not in ('_vals', '_name', '_add', '_main'):
+            if self._main and name in self._vals[self._name]._vals:
                 setattr(django_settings, name, val)
                 return setattr(self._vals[self._name], name, val)
             raise SettingsException, 'groups are immutable'
