@@ -18,6 +18,9 @@ class TestClass:
 class GroupTestCase(TestCase):
 
     def setUp(self):
+        # Set initial to default
+        TestClass.testchar.initial = 'test value'
+
         self.appname = 'testgroup'
         self.name = 'testname'
         classobj = TestClass
@@ -68,6 +71,57 @@ class GroupTestCase(TestCase):
 
     def test_set_no_attr(self):
         self.assertRaises(AttributeError, setattr, self.group, 'no_attr', 'test val')
+
+    def set_to_db(self):
+        from appsettings.models import Setting
+        from django.contrib.sites.models import Site
+
+        site = Site.objects.get_current()
+
+        setting = Setting(site=site, app=self.appname, class_name=self.name,
+                          key='testchar', value='new test value')
+        setting.save()
+
+    def test_init_with_db(self):
+        self.set_to_db()
+
+        classobj = TestClass
+        preset = {}
+        main = False
+
+        self.group = settingsobj.Group(self.appname, self.name,
+                                       classobj, preset, main)
+
+        self.assertEqual(self.group.testchar, 'new test value')
+
+    def test_set_to_db(self):
+        self.set_to_db()
+        self.assertEqual(self.group.testchar, 'new test value')
+
+    def test_main_group(self):
+        classobj = TestClass
+        preset = {}
+        main = True
+
+        self.group = settingsobj.Group(self.appname, self.name,
+                                       classobj, preset, main)
+
+        # Repeat test
+        self.test_init()
+        self.test_getattr()
+        self.test_setattr()
+
+        # Test correct set settings.py
+        from django.conf import settings
+        self.assertEqual(settings.testinteger, 1)
+
+        # Test width DB
+        self.set_to_db()
+        # Update group
+        self.group = settingsobj.Group(self.appname, self.name,
+                                       classobj, preset, main)
+
+        self.assertEqual(settings.testchar, 'new test value')
 
 
 class AppTestCase(TestCase):

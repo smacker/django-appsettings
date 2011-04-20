@@ -22,7 +22,7 @@ def get_apps(settingsinst):
 @staff_member_required
 def app_index(request, template = 'appsettings/index.html', base_template = 'index.html'):
     apps = get_apps(settingsinst)
-    return render_to_response(template, 
+    return render_to_response(template,
             {'app_list':apps, 'base_template':base_template},
             RequestContext(request))
 
@@ -35,7 +35,7 @@ def app_settings(request, app_name=None, template = 'appsettings/index.html', ba
         if group._readonly:continue
         groups.append([group_name, group])
     apps.append([app_name, groups])
-    return render_to_response(template, 
+    return render_to_response(template,
             {'app_list':apps, 'base_template':base_template, 'app_name':app_name},
             RequestContext(request))
 

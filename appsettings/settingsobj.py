@@ -146,7 +146,8 @@ class Group(object):
                 raise SettingsException, 'setting %s.%s.%s not set. Please set it in your settings.py' % (appname, name, key)
             val._parent = self
             self._vals[key] = val
-            setattr(django_settings, name, val)
+            if self._main:
+                setattr(django_settings, key, val.initial)
 
         if has_db:
             settings = Setting.objects.all().filter(app=self._appname,
@@ -192,13 +193,13 @@ class Group(object):
         self._vals[name].initial = self._vals[name].clean(value)
         try:
             setting = Setting.objects.get(app = self._appname,
-                    site = Site.objects.get_current(), 
+                    site = Site.objects.get_current(),
                     class_name = self._name,
                     key = name)
         except Setting.DoesNotExist:
-            setting = Setting(site = Site.objects.get_current(), 
-                    app = self._appname, 
-                    class_name = self._name, 
+            setting = Setting(site = Site.objects.get_current(),
+                    app = self._appname,
+                    class_name = self._name,
                     key = name)
         serialized = value
         if hasattr(self._vals[name].widget, '_format_value'):
