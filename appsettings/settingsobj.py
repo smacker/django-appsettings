@@ -44,7 +44,7 @@ class Settings(object):
         getattr(self, appname)._add(classobj, readonly, main, getattr(user.settings, appname)._dct)
 
     def update_from_db(self):
-        if has_db:
+        if self.discovered and has_db:
             settings = Setting.objects.all()
             for setting in settings:
                 app = getattr(self, setting.app)
