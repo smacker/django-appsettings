@@ -6,7 +6,7 @@ class Setting(models.Model):
     app = models.CharField(max_length=255)
     class_name = models.CharField(max_length=255, blank=True)
     key = models.CharField(max_length=255)
-    value = models.CharField(max_length=255, blank=True)
+    value = models.TextField(blank=True)
 
     def __setattr__(self, name, value):
         if name != 'value':
