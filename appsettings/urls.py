@@ -1,6 +1,4 @@
 from django.conf.urls.defaults import *
-from django.contrib import admin
-admin.autodiscover()
 
 import views
 
