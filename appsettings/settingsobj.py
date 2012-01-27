@@ -165,6 +165,8 @@ class Group(object):
 
 
     def __getattr__(self, name):
+        if name=='verbose_name':
+            name='_verbose_name'
         if name not in ('_vals', '_name', '_appname', '_verbose_name', '_readonly', '_cache_prefix', '_main'):
             if name not in self._vals:
                 raise AttributeError, 'setting "%s" not found'%name
