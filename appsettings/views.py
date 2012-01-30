@@ -52,6 +52,7 @@ def app_group_settings(request, app_name, group_name, template = 'appsettings/se
         fields[field_name] = value
         fieldset_fields.append(field_name)
         initial[field_name] = getattr(group, key)
+    fieldset_fields.sort()
     fieldsets.append((group_name, group._verbose_name, fieldset_fields,))
     editor = type('SettingsForm', (forms.FieldsetForm,),
                      {'base_fieldsets': fieldsets, 'base_fields':fields})
