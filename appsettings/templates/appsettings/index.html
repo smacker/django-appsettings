@@ -29,7 +29,7 @@
         <caption><a href="{% url app_settings name %}" class="section">{% trans name %}</a></caption>
         {% for group_name, group in groups %}
             <tr>
-                <th scope="row"><a href="{% url app_group_settings name group_name %}">{% trans group_name %}</a></th>
+                <th scope="row"><a href="{% url app_group_settings name group_name %}">{% trans group.verbose_name %}</a></th>
                 <td><a href="{% url app_group_settings name group_name %}" class="changelink">{% trans 'Change' %}</a></td>
             </tr>
         {% endfor %}
